@@ -130,14 +130,14 @@ using namespace std;
 		
    //real function call
    pFunc realFunc=(pFunc)(func);
-   %s result=realFunc(this,%s);
+   %s result=realFunc(this%s);
 		
    /* AOP after */
    /* your code starts here */
 		
    return result;
 }
-'''%(option["function"],' '.join(returntype),classname,arguments,option["libname"],namemangling,' '.join(returntype),arguments)
+'''%(option["function"],' '.join(returntype),classname,arguments,option["libname"],namemangling,' '.join(returntype),'' if not arguments else ','+arguments)
 	
 	with open(option["cppname"],'w+') as f:
 		f.write(include+function)
