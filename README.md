@@ -1,2 +1,1 @@
-# CCAOP
-endow your c++ code the ability of AOP
+﻿**CCAOP**>endow your c++ code the ability of AOP, withou even altering or recompling it.With the boom of Internet, Spring has became very popular among the Java developers. AOP, as  a pillar of Spring's key features, has been used massively in Java as a design pattern in a way that C++, by and large, has not.This is a tool to generate boilerplate C++ code﻿, which can hook any C++ class member function( not inline ) you specify.You can write your own code, run before or after the function you hook without even altering or recompiling the program you want to hook. This endows you the ability of AOP in C++ world, very rough though.
