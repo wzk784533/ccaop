@@ -60,7 +60,7 @@ def showSysoption(option):
 		print "** "+x+"\t: "+value
 
 def analyzeFunction(functionName):
-	arguments=functionName.split("(")[1].strip(')')
+	arguments=functionName.split("(")[1].strip(')').strip()
 	classname=functionName.split("::")[0].split(' ')[-1]
 	returntype=functionName.split("::")[0].split(' ')[0:-1]
 	funcName=functionName.split("::")[1].split('(')[0].strip()
@@ -110,12 +110,16 @@ using namespace std;
 '''%option["headfile"]
 	
 	returntype,classname,funcName,arguments=analyzeFunction(option["function"])
-	namemangling=generateCppFuncName(option["libname"],option["namespace"],classname,funcName)	
+	namemangling=generateCppFuncName(option["libname"],option["namespace"],classname,funcName)
+	
+	arguments='' if not arguments else ','+arguments
+	returnvalue="" if returntype[0].strip()=="void" else "%s result="%' '.join(returntype)
+	resultvalue="return;" if returntype[0].strip()=="void" else "return result;"
 	
 	function='''
 %s
 {
-   typedef %s (*pFunc)(%s *,%s);
+   typedef %s (*pFunc)(%s *%s);
    static void *handle = NULL;
    static void *func = NULL;
    if(!func)
@@ -130,14 +134,14 @@ using namespace std;
 		
    //real function call
    pFunc realFunc=(pFunc)(func);
-   %s result=realFunc(this%s);
+   %srealFunc(this%s);
 		
    /* AOP after */
    /* your code starts here */
 		
-   return result;
+   %s
 }
-'''%(option["function"],' '.join(returntype),classname,arguments,option["libname"],namemangling,' '.join(returntype),'' if not arguments else ','+arguments)
+'''%(option["function"],' '.join(returntype),classname,arguments,option["libname"],namemangling,returnvalue,arguments,resultvalue)
 	
 	with open(option["cppname"],'w+') as f:
 		f.write(include+function)
