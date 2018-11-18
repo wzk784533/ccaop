@@ -73,15 +73,24 @@ def analyzeFunction(functionName):
 #this implemention is ugly, will fix someday later
 def generateCppFuncName(libname,namespace,classname,function):
 	command=None
+	if function==classname:#Constructor
+		function=function+'C'
+	
+	if function=='~'+classname:#Destructor
+		function=classname+'D'
+		
 	if not namespace:
 		command="nm %s | grep %s | grep %s | grep T | awk '{print $3}'"%(libname,classname,function)
 	else:
 		command="nm %s | grep %s | grep %s | grep %s | grep T | awk '{print $3}'"%(libname,namespace,classname,function)
+
 	result=os.popen(command).read().strip().split("\n")
 	for func in result:
+		if not func.strip():
+			continue
 		command="c++filt "+func
 		realfunc=os.popen(command).read()
-		print "Are you gonna hook this function ?\n\n"+realfunc+"\n\n"
+		print "Are you gona hook this function ?\n\n"+realfunc+"\n\n"
 		while True:
 			confirm=raw_input("if it is the right function press y,else press other key:")			
 			if not confirm.strip():
@@ -113,8 +122,9 @@ using namespace std;
 	namemangling=generateCppFuncName(option["libname"],option["namespace"],classname,funcName)
 	
 	arguments='' if not arguments else ','+arguments
-	returnvalue="" if returntype[0].strip()=="void" else "%s result="%' '.join(returntype)
-	resultvalue="return;" if returntype[0].strip()=="void" else "return result;"
+	returnvalue="" if (not returntype or returntype[0].strip()=="void") else "%s result="%' '.join(returntype)
+	resultvalue="return;" if (not returntype or returntype[0].strip()=="void") else "return result;"
+	vpointValue='void' if not returntype else ' '.join(returntype)
 	
 	function='''
 %s
@@ -141,7 +151,7 @@ using namespace std;
 		
    %s
 }
-'''%(option["function"],' '.join(returntype),classname,arguments,option["libname"],namemangling,returnvalue,arguments,resultvalue)
+'''%(option["function"],vpointValue,classname,arguments,option["libname"],namemangling,returnvalue,arguments,resultvalue)
 	
 	with open(option["cppname"],'w+') as f:
 		f.write(include+function)
